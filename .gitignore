@@ -1,0 +1,8 @@
+## Ignore 
+
+*.gem
+*.rbc
+config.rb
+Gemfile.lock
+.ruby-version
+.rvmrc
