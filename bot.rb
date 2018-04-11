@@ -22,6 +22,11 @@ bot = Discordrb::Commands::CommandBot.new token: configatron.token, client_id: 4
 # Admin can reset movie vote
 ##
 
+#@TODO
+# 1. Add rescue clauses
+# 2. Finish Admin
+# 3. Refactor
+
 # @notice ID is a public client ID on Discord
 
 module Owner
@@ -51,10 +56,15 @@ class List
 	def initialize
 		@movies = []
 		@owner = Owner.id
+		@votes = Array.new
 	end
 
 	def movies
 		@movies
+	end
+
+	def votes
+		@votes
 	end
 
 	def is_owner?
@@ -97,11 +107,11 @@ bot.command(:addmovie, description: "Add movie to the list using !addmovie YOUR_
 
 	unless LIST.movies.include?(movie)
 		LIST.movies.push(movie)
+		LIST.votes.push({"#{movie}" => 0})
 		event.respond "#{movie.capitalize} added to the list."
 	else
 		event.respond "#{movie.capitalize} is already on the list!"
 	end
-
 
 	if LIST.movies.length == 0
 		event.respond "The list is empty: #{movie}"
@@ -114,11 +124,39 @@ end
 # @TODO
 bot.command(:votemovie, description: "Pick a movie from the list and vote!", usage: "!votemovie YOUR_MOVIE_HERE") do |event, *movie|
 
-	# @dev Check if user is picking movie from the list
-
 	movie = movie.join(' ').downcase
+	
+	# @notice Check that the movie is actually on the list
 
+	unless LIST.movies.include?(movie)
+		return event.respond "This movie isn't in the list. Try !addmovie #{movie}"
+	end
 
+	# Show list of current movies
+	 see_list = "Movies: \n\n" 
+	 LIST.movies.each_with_index do |movie, i|	
+			see_list += "#{i += 1}. #{movie.capitalize} \n"
+	 end
+	 event.respond "#{see_list}"
+
+	# Use grep to get user vote
+	
+	# Add vote to current list
+
+	unless LIST.movies.empty?
+		
+		LIST.votes.each_with_index do |m,i|
+
+			if m.keys[0] === movie
+				LIST.votes[i][m.keys[0]] += 1
+				break event.respond "One vote added to #{m.keys[0].capitalize}. #{m.keys[0].capitalize} has now #{m.values[0]} votes."
+			end
+
+		end
+	else
+		event.respond "No movies, no voting. Try !addmovie #{movie}"
+	end
+	
 end
 
 bot.run
