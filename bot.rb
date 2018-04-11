@@ -25,7 +25,8 @@ bot = Discordrb::Commands::CommandBot.new token: configatron.token, client_id: 4
 #@TODO
 # 1. Add rescue clauses
 # 2. Finish Admin
-# 3. Refactor
+# 3. Add votecount command
+# 4. Refactor
 
 # @notice ID is a public client ID on Discord
 
@@ -86,8 +87,13 @@ end
 bot.command(:startlist, description: "Starts list for movies to be added", usage: "!startlist") do |event|
 
 	if event.user.id === Owner.id
-		LIST = List.new
-		event.respond "A list has being started. To add movies call the !addmovie command"
+
+		unless defined?(@list)
+			@list ||= List.new
+			event.respond "A list has being started. To add movies call the !addmovie command"
+		else
+			event.respond "There's already a list of movies being made. To delete !deletelist"
+		end
 	else
 		event.respond "Not owner"
 	end
@@ -101,22 +107,22 @@ bot.command(:addmovie, description: "Add movie to the list using !addmovie YOUR_
 
 	# @dev Lookup movie in List for duplicates
 	
-	if LIST.movies.length == 10
+	if @list.movies.length == 10
 		break event.respond "I can't add any more movies, we got 10 movies already to choose from!"
 	end
 
-	unless LIST.movies.include?(movie)
-		LIST.movies.push(movie)
-		LIST.votes.push({"#{movie}" => 0})
+	unless @list.movies.include?(movie)
+		@list.movies.push(movie)
+		@list.votes.push({"#{movie}" => 0})
 		event.respond "#{movie.capitalize} added to the list."
 	else
 		event.respond "#{movie.capitalize} is already on the list!"
 	end
 
-	if LIST.movies.length == 0
+	if @list.movies.length == 0
 		event.respond "The list is empty: #{movie}"
 	else
-		event.respond "Movie list: #{LIST.movies}"
+		event.respond "Movie list: #{@list.movies}"
 	end
 	
 end
@@ -128,27 +134,27 @@ bot.command(:votemovie, description: "Pick a movie from the list and vote!", usa
 	
 	# @notice Check that the movie is actually on the list
 
-	unless LIST.movies.include?(movie)
+	unless @list.movies.include?(movie)
 		return event.respond "This movie isn't in the list. Try !addmovie #{movie}"
 	end
 
 	# Show list of current movies
 	 see_list = "Movies: \n\n" 
-	 LIST.movies.each_with_index do |movie, i|	
+	 @list.movies.each_with_index do |movie, i|	
 			see_list += "#{i += 1}. #{movie.capitalize} \n"
 	 end
 	 event.respond "#{see_list}"
 
 	# Use grep to get user vote
-	
+
 	# Add vote to current list
 
-	unless LIST.movies.empty?
+	unless @list.movies.empty?
 		
-		LIST.votes.each_with_index do |m,i|
+		@list.votes.each_with_index do |m,i|
 
 			if m.keys[0] === movie
-				LIST.votes[i][m.keys[0]] += 1
+				@list.votes[i][m.keys[0]] += 1
 				break event.respond "One vote added to #{m.keys[0].capitalize}. #{m.keys[0].capitalize} has now #{m.values[0]} votes."
 			end
 
