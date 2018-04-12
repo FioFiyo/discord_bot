@@ -53,18 +53,14 @@ end
 class List 
 	include Owner 
 
+	attr_reader :owner
+
+	attr_accessor :movies, :votes
+
 	def initialize
 		@movies = []
 		@owner = Owner.id
 		@votes = Array.new
-	end
-
-	def movies
-		@movies
-	end
-
-	def votes
-		@votes
 	end
 
 	def is_owner?
