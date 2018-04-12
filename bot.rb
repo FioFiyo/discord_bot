@@ -84,6 +84,7 @@ class List
 
 end
 
+
 bot.command(:startlist, description: "Starts list for movies to be added", usage: "!startlist") do |event|
 
 	if event.user.id === Owner.id
@@ -127,42 +128,50 @@ bot.command(:addmovie, description: "Add movie to the list using !addmovie YOUR_
 	
 end
 
-# @TODO
-bot.command(:votemovie, description: "Pick a movie from the list and vote!", usage: "!votemovie YOUR_MOVIE_HERE") do |event, *movie|
+bot.message(start_with: '!vote') do |event|
 
-	movie = movie.join(' ').downcase
+	# User vote input
+	event.user.await(:vote) do |movie|
 	
-	# @notice Check that the movie is actually on the list
+		movie = movie.message.content.downcase
+			
+		# @notice Check that the movie is actually on the list
 
-	unless @list.movies.include?(movie)
-		return event.respond "This movie isn't in the list. Try !addmovie #{movie}"
+		unless @list.movies.include?(movie)
+			 event.respond "This movie isn't in the list. Try !addmovie #{movie}"
+
+			# @dev so we continue listening to the event
+			false
+		end
+
+		# Add vote to current list
+
+		unless @list.movies.empty?
+			
+			@list.votes.each_with_index do |m,i|
+
+				if m.keys[0] === movie
+					@list.votes[i][m.keys[0]] += 1
+					break event.respond "One vote added to #{m.keys[0].capitalize}. #{m.keys[0].capitalize} has now #{m.values[0]} votes."
+				end
+			end
+
+		else
+			event.respond "No movies, no voting. Try !addmovie #{movie}"
+
+			false
+		end
 	end
 
 	# Show list of current movies
-	 see_list = "Movies: \n\n" 
-	 @list.movies.each_with_index do |movie, i|	
-			see_list += "#{i += 1}. #{movie.capitalize} \n"
-	 end
-	 event.respond "#{see_list}"
-
-	# Use grep to get user vote
-
-	# Add vote to current list
-
-	unless @list.movies.empty?
-		
-		@list.votes.each_with_index do |m,i|
-
-			if m.keys[0] === movie
-				@list.votes[i][m.keys[0]] += 1
-				break event.respond "One vote added to #{m.keys[0].capitalize}. #{m.keys[0].capitalize} has now #{m.values[0]} votes."
-			end
-
-		end
-	else
-		event.respond "No movies, no voting. Try !addmovie #{movie}"
+	see_list = "Movies: \n\n" 
+	@list.movies.each_with_index do |movie, i|	
+		see_list += "#{i += 1}. #{movie.capitalize} \n"
 	end
-	
+	event.respond "#{see_list}"
+
+	event.respond "Pick a movie from the list above and just type it out!"
+
 end
 
 bot.run
