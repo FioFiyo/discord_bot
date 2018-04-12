@@ -11,10 +11,9 @@ bot = Discordrb::Commands::CommandBot.new token: configatron.token, client_id: 4
 # If movie has already being added, it'll send a msg with movie already added
 # If movies have reached 10, do not accept any more
 
-# User can call the command !votemovie and will return a list of current movies
-# voting based on starting number 1 to 10 
-# User can then pass number which maps to a movie
-# Movie will have a counter and will be compared to the 10 and ordered accordingly
+# User can call the command !vote and will return a list of current movies
+# User can then pass movie name to vote for after prompted
+# Movie will have a vote counter and will be compared to the 10 movies and ordered accordingly
 
 # User can call the command !votecount and will return movie list with % of current votes
 
